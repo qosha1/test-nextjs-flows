@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# test-nextjs-flows
 
-## Getting Started
+Non-trivial Next.js App Router fixtures for evaluating the **DebuggAI** E2E
+workflow against ground-truth behavior.
 
-First, run the development server:
+Each flow lives under `/flows/{name}` and is designed to stress a specific
+capability the DebuggAI QA engine needs to get right: session persistence,
+multi-step state, async timing, optimistic rollback, request cancellation,
+modal stacking, dirty-state detection, and transient UI (toasts).
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # production build
+npm start          # run production build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Flows
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Route                         | Flow                      | Stresses                                                   |
+| ----------------------------- | ------------------------- | ---------------------------------------------------------- |
+| `/flows/auth`                 | Cookie session            | Persistence, redirects, protected routes                   |
+| `/flows/wizard`               | 3-step form               | Multi-page state, URL-driven state, back-button            |
+| `/flows/async-list`           | Loading / error / empty   | Timing-sensitive transitions, error vs empty               |
+| `/flows/optimistic`           | Like with rollback        | State inversion under latency                              |
+| `/flows/search`               | Debounced search          | Debounce window, request cancellation                      |
+| `/flows/modals`               | Nested modal + Undo       | Stacking, focus trap, time-bounded actions                 |
+| `/flows/items/[id]/edit`      | Dynamic route             | Param extraction, dirty-state navigation guard             |
+| (cross-cutting)               | Toast system              | Ephemeral UI, timer-driven dismiss                         |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Full flow specification, including every expected behavior and edge case, is
+tracked in the DebuggAI beads issue tracker (issue `full-platform-ebno`).
 
-## Learn More
+## Platform endpoints
 
-To learn more about Next.js, take a look at the following resources:
+| Endpoint                    | Purpose                                   |
+| --------------------------- | ----------------------------------------- |
+| `GET /api/health`           | Health check — returns `{"status":"ok"}`  |
+| `POST /api/reset`           | Clear in-memory state + cookies           |
+| `POST /api/seed/{scenario}` | Preload state for a named scenario        |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`/api/reset` and `/api/seed/*` are not yet implemented (see bead `lmg4`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Testing
 
-## Deploy on Vercel
+In-repo Playwright tests live under `tests/e2e/` and act as ground truth: any
+disagreement between these tests and the DebuggAI platform's verdict is a
+platform bug, not an app bug.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run test:e2e
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Non-goals
+
+- No real backend — mock data with artificial latency via Next.js route handlers
+- No third-party auth / analytics / fonts — builds offline-clean
+- No production deployment story — this repo exists to be crawled and tested
