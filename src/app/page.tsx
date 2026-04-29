@@ -50,6 +50,12 @@ const flows: Flow[] = [
     description: "Edit page at /flows/items/[id]/edit with dirty-state navigation guard.",
     stresses: "URL param extraction, dirty-state detection.",
   },
+  {
+    href: "/flows/paginated",
+    title: "Paginated table",
+    description: "2-per-page table with Prev/Next navigation. Page number is URL-synced via ?page=N.",
+    stresses: "URL-driven page state, boundary conditions, per-page data fetching.",
+  },
 ];
 
 export default function Home() {
