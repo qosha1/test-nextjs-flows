@@ -58,3 +58,5 @@ npm run test:e2e
 - No real backend — mock data with artificial latency via Next.js route handlers
 - No third-party auth / analytics / fonts — builds offline-clean
 - No production deployment story — this repo exists to be crawled and tested
+
+<!-- DebuggAI validation run run -->
